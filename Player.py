@@ -37,6 +37,8 @@ class Player(BasePlayer):
     '''
     Your strategy starts here.
     '''
+    def __init__(self):
+        self.name = "MEEEEE"
     
     def hunt_choices(
                     self,
@@ -47,9 +49,49 @@ class Player(BasePlayer):
                     player_reputations,
                     ):
         '''Required function defined in the rules'''
-                    
-        return ['s']*len(player_reputations)
-        
+
+        if round_number < 100:
+            hunt_decisions = []
+            for x in player_reputations:
+                if x>(round_number-1)*0.016: # only hunt with those with high reputation
+                    hunt_decisions.append('h')
+            else:
+                    hunt_decisions.append('s')
+            return hunt_decisions
+        else:
+            avg_rep = sum(player_reputations) / float(len(player_reputations))
+            huntquota = round(avg_rep * float(len(player_reputations))) 
+            hunts = len(player_reputations)
+            sorted_player_reps = sorted(player_reputations)
+            remainder = list(sorted_player_reps)
+            dictionary = {}
+            
+            for rep in sorted_player_reps:
+                if rep >= 0.9 or rep < 0.5:
+                    dictionary[rep] = 's'
+                    remainder.remove(rep)
+            
+            last = list(remainder)
+            
+            for r in range(1,int(huntquota+1)):
+                if huntquota < len(last):
+                    dictionary[remainder[len(remainder)-r]] = 'h'
+                    last.remove(remainder[len(remainder)-r])
+                else:
+                    for x in last:
+                        dictionary[x] = 'h'
+                        last.remove(x)
+
+            if last:
+                for x in last:
+                    dictionary[x] = 's'
+            
+            hunt_decisions = []
+
+            for rep in player_reputations:
+                hunt_decisions.append(dictionary[rep])
+
+            return hunt_decisions
 
     def hunt_outcomes(self, food_earnings):
         '''Required function defined in the rules'''
