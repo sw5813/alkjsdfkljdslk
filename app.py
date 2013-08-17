@@ -3,12 +3,12 @@ from Game import Game
 from bots import *
 from Player import Player
 from Grace import Grace
-from Test import Test
+from Guy import Guy
 
 # Bare minimum test game. See README.md for details.
 
 if __name__ == '__main__':
-    players = [Grace(), Player(), Freeloader(), Test(), BoundedHunter(0.5,0.8)]
+    players = [Grace(), Player(), Freeloader(), Guy(), BoundedHunter(0.5,0.8)]
     game = Game(players)
     #game.play_game()
     for i in range(0,input()):

@@ -89,7 +89,7 @@ class BasePlayer(object):
        with me, this will give me an advantage over other players.
 '''
 
-class Test(BasePlayer):
+class Guy(BasePlayer):
     """OOP player implementation"""
     def hunt_choices(self,round_number,current_food,current_reputation,m,player_reputations):
         decisions=[]                     # strategy is the list of hunting decisions
