@@ -91,6 +91,9 @@ class BasePlayer(object):
 
 class Guy(BasePlayer):
     """OOP player implementation"""
+    def __init__(self):
+        self.name = "Guy"
+        
     def hunt_choices(self,round_number,current_food,current_reputation,m,player_reputations):
         decisions=[]                     # strategy is the list of hunting decisions
         for x in player_reputations:

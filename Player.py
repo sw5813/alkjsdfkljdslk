@@ -1,21 +1,4 @@
-# This file is intended to be a final submission. python tester.py Player.py
-# should work at all times. If it does not, there is a bug.
-# If you're just trying to test a solution, scroll down to the Player
-# class.
-
-# This file is intended to be in the same format as a valid solution, so
-# that users can edit their solution into Player and then submit just this
-# file to the contest. If you see any reason this would not work, please submit
-# an Issue to https://github.com/ChadAMiller/hungergames/issues or email me.
-
-# You can see more sample player classes in bots.py
-
 class BasePlayer(object):
-    '''
-    Base class so I don't have to repeat bookkeeping stuff.
-    Do not edit unless you're working on the simulation.
-    '''
-    
     def __str__(self):
         try:
             return self.name
@@ -34,9 +17,6 @@ class BasePlayer(object):
 
 
 class Player(BasePlayer):
-    '''
-    Your strategy starts here.
-    '''
     def __init__(self):
         self.name = "MEEEEE"
     
@@ -48,57 +28,102 @@ class Player(BasePlayer):
                     m,
                     player_reputations,
                     ):
-        '''Required function defined in the rules'''
+        global players
+        players = len(player_reputations)
 
-        if round_number < 100:
-            hunt_decisions = []
-            for x in player_reputations:
-                if x>(round_number-1)*0.016: # only hunt with those with high reputation
-                    hunt_decisions.append('h')
-            else:
-                    hunt_decisions.append('s')
-            return hunt_decisions
-        else:
-            avg_rep = sum(player_reputations) / float(len(player_reputations))
-            huntquota = round(avg_rep * float(len(player_reputations))) 
-            hunts = len(player_reputations)
-            sorted_player_reps = sorted(player_reputations)
-            remainder = list(sorted_player_reps)
-            dictionary = {}
-            
-            for rep in sorted_player_reps:
-                if rep >= 0.9 or rep < 0.5:
-                    dictionary[rep] = 's'
-                    remainder.remove(rep)
-            
-            last = list(remainder)
-            
-            for r in range(1,int(huntquota+1)):
-                if huntquota < len(last):
-                    dictionary[remainder[len(remainder)-r]] = 'h'
-                    last.remove(remainder[len(remainder)-r])
-                else:
-                    for x in last:
-                        dictionary[x] = 'h'
-                        last.remove(x)
+        sorted_player_reps = sorted(player_reputations)
+        hunt_decisions = []
+        dictionary = {}
+        global tracking_dict
+        tracking_dict = {}  
+        location = {}
 
-            if last:
-                for x in last:
-                    dictionary[x] = 's'
-            
-            hunt_decisions = []
+        if round_number == 1:
+            self.strategy = 'blank'
+            self.hunt_cap = 0
+            self.avg_hunts = 0
+            self.tracking = False
+            global total_hunts
+            total_hunts = 0  
+            global h
+            h = 0
 
+        if self.tracking:
+            print("TRACKING IN PROGRESS: PLAYER REPUTATIONS")
+            index = 1
             for rep in player_reputations:
-                hunt_decisions.append(dictionary[rep])
+                tracking_dict[index] = rep
+                index += 1
+            for x in range(1, len(tracking_dict)+1):
+                for y in range(1, len(tracking_dict_copy)+1):
+                    if tracking_dict_copy[y] == tracking_dict[x]:
+                        location[y] = tracking_dict[x]
 
-            return hunt_decisions
+        for rep in sorted_player_reps:
+            dictionary[rep] = 's'
 
-    def hunt_outcomes(self, food_earnings):
-        '''Required function defined in the rules'''
-        pass
+        if self.strategy == 'slack':
+            dictionary[rep] = ['s' for rep in player_reputations]
+        else:
+            for rep in sorted_player_reps:
+                if rep > round_number / 75:
+                    for r in range(1,int(self.avg_hunts+1)):         
+                        dictionary[sorted_player_reps[len(sorted_player_reps)-r]] = 'h'
         
+        for rep in player_reputations:
+            hunt_decisions.append(dictionary[rep])
+
+        return hunt_decisions
+
+    def hunt_outcomes(self, food_earnings): #IMPLEMENT HUNT_CAP
+        tracking_dict2 = {}
+
+        successful_hunts=food_earnings.count(0)
+        failed_hunts=food_earnings.count(-3)
+        my_hunts=successful_hunts+failed_hunts
+        
+        successful_slacks=food_earnings.count(1)
+        failed_slacks=food_earnings.count(-2)
+        my_slacks=successful_slacks+failed_slacks
+
+        opponents_hunt = successful_hunts + successful_slacks
+        
+        if opponents_hunt > my_hunts:
+            self.hunt_cap = opponents_hunt
+
+        global total_hunts
+        total_hunts += players
+        print(total_hunts)
+        global h
+        h += my_hunts
+        print(h)
+        if (h+players)/(total_hunts+players)-h/total_hunts<.001:
+            self.tracking = True
+
+        if self.tracking:
+            index = 1
+            for food in food_earnings:
+                if food == 0 or food == 1:
+                    tracking_dict2[index] = 'h'
+                else:
+                    tracking_dict2[index] = 's'
+                index += 1
+            global tracking_dict_copy
+            tracking_dict_copy = dict(tracking_dict)
+            print("TRACKING: OPPONENT REPUTATIONS")
+            print tracking_dict_copy
+            print("TRACKING: OPPONENT ACTION")
+            print(tracking_dict2)
 
     def round_end(self, award, m, number_hunters):
-        '''Required function defined in the rules'''
-        pass
+        if number_hunters == 0:
+            self.strategy = 'slack'
+
+        if players > 1:
+            self.avg_hunts = round(number_hunters/(players*(players-1)))
+        else:
+            self.avg_hunts = number_hunters/1
+
+        if self.hunt_cap > self.avg_hunts:
+            self.avg_hunts = self.hunt_cap
         

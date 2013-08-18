@@ -8,8 +8,9 @@ from Guy import Guy
 # Bare minimum test game. See README.md for details.
 
 if __name__ == '__main__':
-    players = [Grace(), Player(), Freeloader(), Guy(), BoundedHunter(0.5,0.8)]
+    players = [Freeloader(), Alternator(), FairHunter(), Random(0.8), Player(), MaxRepHunter(), BoundedHunter(0.5,1)]
     game = Game(players)
-    #game.play_game()
-    for i in range(0,input()):
-    	game.play_round()
+    game.play_game()
+    
+    #for i in range(0,input()):
+    #	game.play_round()
